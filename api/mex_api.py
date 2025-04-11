@@ -1,7 +1,25 @@
 import zipfile
 import pandas as pd
+# import plotly.express as px
+import plotly.graph_objects as go
+import json
 
 import asyncio
+
+
+from google import genai
+from llama_index.core.query_pipeline import (
+    QueryPipeline as QP,
+    Link,
+    InputComponent,
+)
+from llama_index.experimental.query_engine.pandas import (
+    PandasInstructionParser,
+)
+from llama_index.core import PromptTemplate
+from llama_index.llms.google_genai import GoogleGenAI
+
+
 # Ensure an event loop is created
 try:
     asyncio.get_running_loop()
@@ -22,27 +40,10 @@ with zipfile.ZipFile(path) as z:
     with z.open('Synthetic dataset for task 2/transaction_items.csv') as f:
         df_transaction_items = pd.read_csv(f)
 
-from google import genai
-client = genai.Client(api_key="AIzaSyDzyqd7nsKzFqYPUVpkq51LEwRPWLz6maw")
-model = "gemma-3-27b-it"
-
-from llama_index.core.query_pipeline import (
-    QueryPipeline as QP,
-    Link,
-    InputComponent,
-)
-from llama_index.experimental.query_engine.pandas import (
-    PandasInstructionParser,
-)
-
-from llama_index.core import PromptTemplate
-
-from llama_index.llms.google_genai import GoogleGenAI
-
 
 llm = GoogleGenAI(api_key='AIzaSyB65urG5OL56HIsf0_Rxqof-q5e6M9Pjrg', model_name="models/gemma-3-27b-it")
 
-import pandas as pd
+
 
 df = [df_transaction_items.copy(), df_items.copy(), df_transaction_data.copy(), df_merchant.copy(), df_keywords.copy()]
 df = pd.concat(df)
@@ -99,6 +100,7 @@ graph_generator_prompt_str = (
       color is the color styling for the plotly graph.\n
 
     """
+    "Do not give other output other than the json\n"
 )
 
 pandas_prompt = PromptTemplate(pandas_prompt_str).partial_format(
@@ -139,34 +141,109 @@ qp.add_links(
     ]
 )
 
-# add link from response synthesis prompt to llm2
-
 
 qp.add_link(
     "pandas_output_parser",      
     "graph_generator_prompt",    
-    dest_key="pandas_output"     # Key in the destination prompt template
+    dest_key="pandas_output"     
 )
 
 qp.add_link(
-    "graph_generator_prompt",    # Source component
-    "llm3"                       # Destination component
+    "graph_generator_prompt",   
+    "llm3"                       
 )
 qp.add_link(
-    "llm3",                           # Source component: the LLM generating JSON
-    "response_synthesis_prompt",      # Destination component: the prompt for llm2
-    dest_key="llm3_json_output"       # Destination key: matches placeholder in modified prompt
+    "llm3",                           
+    "response_synthesis_prompt",      
+    dest_key="llm3_json_output"       
 )
 qp.add_link("response_synthesis_prompt", "llm2")
 
+def graph_generation(response):
+
+  try:
+        response = json.loads(response)
+  except json.JSONDecodeError:
+        print("Error: Invalid JSON string provided.")
+        return None
+
+  if response.get('plot'):
+        graph_type = response.get('graph_type', 'scatter').lower()
+        title = response.get('title', 'Generated Graph')
+        x_label = response.get('x_label', 'X-axis')
+        y_label = response.get('y_label', 'Y-axis')
+        data_x = response.get('data_x', [])
+        data_y = response.get('data_y', [])
+        color = response.get('color')
+
+
+        if not data_x or not data_y or len(data_x) != len(data_y):
+            print("Error: Invalid or missing data for plotting.")
+            return None
+
+        df = pd.DataFrame({'x': data_x, 'y': data_y})
+        if graph_type == 'scatter':
+            # Use a list of traces (even if only one) for the Figure's data.
+            fig = go.Figure(data=[
+                go.Scatter(x=df['x'], y=df['y'],
+                        mode='markers',
+                        marker_color=color,
+                        name=title)
+            ])
+        elif graph_type == 'line':
+            fig = go.Figure(data=[
+                go.Scatter(x=df['x'], y=df['y'],
+                        mode='lines',
+                        line=dict(color=color),
+                        name=title)
+            ])
+        elif graph_type == 'bar':
+            fig = go.Figure(data=[
+                go.Bar(x=df['x'], y=df['y'],
+                    marker_color=color,
+                    name=title)
+            ])
+        elif graph_type == 'histogram':
+            # For histogram, usually you only need the x-values.
+            fig = go.Figure(data=[
+                go.Histogram(x=df['x'],
+                            marker_color=color,
+                            name=title)
+            ])
+        else:
+            # Fallback to a scatter plot with a warning.
+            print(f"Warning: Graph type '{graph_type}' is not supported. Defaulting to scatter plot.")
+            fig = go.Figure(data=[
+                go.Scatter(x=df['x'], y=df['y'],
+                        mode='markers',
+                        marker_color=color,
+                        name=title)
+            ])
+
+        # Update the layout with a title and axis labels.
+        fig.update_layout(
+            title=title,
+            xaxis_title=x_label,
+            yaxis_title=y_label,
+            template='plotly_white'
+        )
+        return fig
+  else:
+        print("Plotting is disabled in the response.")
+        return None
 def mex_prompt(prompt):
   chat_history = []
   user_input = prompt
   try:
     response,x = qp.run_with_intermediates(query_str=user_input+" .You may refer the chat history "+str(chat_history),)
-    chat_history += "User input, "+user_input
-    chat_history += "AI answer, "+response.message.content
-    return response.message.content
+    chat_history.append("User input, "+user_input)
+    chat_history.append("AI answer, "+response.message.content)
+
+    graph_response_extraction = (str(x.get('llm3')).split('```'))
+    graph_response = graph_response_extraction[1]
+    graph_data = graph_response.replace('json', '').replace('\\n', '')
+    graph = graph_generation(graph_data)
+    return response.message.content, graph
 
   except Exception as e:
     print(f"An error occurred: {e}")

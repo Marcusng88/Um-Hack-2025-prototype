@@ -47,8 +47,12 @@ if prompt := st.chat_input("What is up?"):
         full_response = ""
 
         with st.spinner("MEX Assistant is thinking..."):
-            assistant_response = api.mex_prompt(prompt)
-
+            
+            assistant_response,graph = api.mex_prompt(prompt)
+            print(graph)
+            if graph is not None and not isinstance(graph, str):
+                st.plotly_chart(graph)
+            
             for chunk in assistant_response.split():
                 full_response += chunk + " "
                 time.sleep(0.05)
@@ -73,7 +77,12 @@ elif st.button("Start Transcription"):
             full_response = ""
 
             with st.spinner("MEX Assistant is thinking..."):
-                assistant_response = api.mex_prompt(prompt)
+
+                assistant_response,graph = api.mex_prompt(prompt)
+                print(graph)
+            
+                if graph is not None and not isinstance(graph, str):
+                    st.plotly_chart(graph)
 
                 for chunk in assistant_response.split():
                     full_response += chunk + " "
