@@ -50,7 +50,6 @@ if prompt := st.chat_input("What is up?"):
             df = api.choose_dataset(prompt)
             api.query_pipeline(df)
             assistant_response,graph = api.mex_prompt(prompt)
-            print(assistant_response)
             if graph is not None and not isinstance(graph, str):
                 st.plotly_chart(graph)
             
@@ -80,11 +79,10 @@ elif st.button("Start Transcription"):
                 df = api.choose_dataset(prompt)
                 api.query_pipeline(df)
                 assistant_response,graph = api.mex_prompt(prompt)
-                print(assistant_response)
             
                 if graph is not None and not isinstance(graph, str):
                     st.plotly_chart(graph)
-                    
+
                 for chunk in assistant_response.split():
                     full_response += chunk + " "
                     time.sleep(0.05)
