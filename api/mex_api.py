@@ -34,15 +34,11 @@ from llama_index.core.query_pipeline import (
 from llama_index.experimental.query_engine.pandas import (
     PandasInstructionParser,
 )
-# from llama_index.llms.openai import OpenAI
+
 from llama_index.core import PromptTemplate
 
 from llama_index.llms.google_genai import GoogleGenAI
 
-# To configure model parameters use the `generation_config` parameter.
-# eg. generation_config = {"temperature": 0.7, "topP": 0.8, "topK": 40}
-# If you only want to set a custom temperature for the model use the
-# "temperature" parameter directly.
 
 llm = GoogleGenAI(api_key='AIzaSyB65urG5OL56HIsf0_Rxqof-q5e6M9Pjrg', model_name="models/gemma-3-27b-it")
 
@@ -70,11 +66,39 @@ pandas_prompt_str = (
     "Expression:"
 )
 response_synthesis_prompt_str = (
-    "Given an input question, synthesize a response from the query results. You should analyze the result and give business insight, the user will be merchant partner from food delivery company. Make it interactive and informative in 100 words.\n"
+    "Given an input question,PLEASE IGNORE THE JSON VARIABLE. synthesize a response from the query results.\n"
+    "You should analyze the result and give business insight, the user will be merchant partner from food delivery company.\n"
+    "Make it interactive and informative with minimum 250 words. You may generate more\n"
     "Query: {query_str}\n\n"
     "Pandas Instructions (optional):\n{pandas_instructions}\n\n"
     "Pandas Output: {pandas_output}\n\n"
+    "Graph Generation Output (JSON):\n{llm3_json_output}\n\n"
     "Response: "
+)
+
+graph_generator_prompt_str = (
+    "Given an input pandas dataframe information {pandas_output} , the input can be None\n"
+    "Figure out whether this information needed to be plot as a graph or not"
+    """Write it in a json format {
+        plot: bool,
+        graph_type: type,
+        title: str,
+        x_label: str,
+        y_label: str,
+        data_x: list,
+        data_y: list,
+        color: str,
+    }\n"""
+    """The plot is True if needed to be plot , False otherwise.
+      graph_type determines which graph is needed to be plot.
+      title will be the name for the graph.
+      x_label is the label for x-axis.
+      y_label is the label for y-axis.
+      data_x is the list of data for x-axis.
+      data_y is the list of data for y-axis.
+      color is the color styling for the plotly graph.\n
+
+    """
 )
 
 pandas_prompt = PromptTemplate(pandas_prompt_str).partial_format(
@@ -82,7 +106,9 @@ pandas_prompt = PromptTemplate(pandas_prompt_str).partial_format(
 )
 pandas_output_parser = PandasInstructionParser(df)
 response_synthesis_prompt = PromptTemplate(response_synthesis_prompt_str)
+graph_generator_prompt = PromptTemplate(graph_generator_prompt_str)
 llm = llm
+
 
 qp = QP(
     modules={
@@ -92,6 +118,8 @@ qp = QP(
         "pandas_output_parser": pandas_output_parser,
         "response_synthesis_prompt": response_synthesis_prompt,
         "llm2": llm,
+        "graph_generator_prompt": graph_generator_prompt,
+        "llm3": llm,
     },
     verbose=True,
 )
@@ -107,17 +135,41 @@ qp.add_links(
             "response_synthesis_prompt",
             dest_key="pandas_output",
         ),
+        
     ]
 )
+
 # add link from response synthesis prompt to llm2
+
+
+qp.add_link(
+    "pandas_output_parser",      
+    "graph_generator_prompt",    
+    dest_key="pandas_output"     # Key in the destination prompt template
+)
+
+qp.add_link(
+    "graph_generator_prompt",    # Source component
+    "llm3"                       # Destination component
+)
+qp.add_link(
+    "llm3",                           # Source component: the LLM generating JSON
+    "response_synthesis_prompt",      # Destination component: the prompt for llm2
+    dest_key="llm3_json_output"       # Destination key: matches placeholder in modified prompt
+)
 qp.add_link("response_synthesis_prompt", "llm2")
 
 def mex_prompt(prompt):
   chat_history = []
   user_input = prompt
-  response = qp.run(
-    query_str= user_input+" .You may refer the chat history "+str(chat_history),
-  )
-  chat_history += "User input, "+user_input
-  chat_history += "AI answer, "+response.message.content
-  return response.message.content
+  try:
+    response,x = qp.run_with_intermediates(query_str=user_input+" .You may refer the chat history "+str(chat_history),)
+    chat_history += "User input, "+user_input
+    chat_history += "AI answer, "+response.message.content
+    return response.message.content
+
+  except Exception as e:
+    print(f"An error occurred: {e}")
+    print("Attempting to access results directly from pipeline state if possible (this depends on the specific QP implementation)")
+
+  
