@@ -47,9 +47,9 @@ if prompt := st.chat_input("What is up?"):
         full_response = ""
 
         with st.spinner("MEX Assistant is thinking..."):
-            
+            df = api.choose_dataset(prompt)
+            api.query_pipeline(df)
             assistant_response,graph = api.mex_prompt(prompt)
-            print(graph)
             if graph is not None and not isinstance(graph, str):
                 st.plotly_chart(graph)
             
@@ -58,7 +58,6 @@ if prompt := st.chat_input("What is up?"):
                 time.sleep(0.05)
                 # Add a blinking cursor to simulate typing
                 message_placeholder.markdown(full_response + "▌")
-        
         message_placeholder.markdown(full_response)
     # Add assistant response to chat history
     st.session_state.messages.append({"role": "assistant", "content": full_response})
@@ -77,9 +76,9 @@ elif st.button("Start Transcription"):
             full_response = ""
 
             with st.spinner("MEX Assistant is thinking..."):
-
+                df = api.choose_dataset(prompt)
+                api.query_pipeline(df)
                 assistant_response,graph = api.mex_prompt(prompt)
-                print(graph)
             
                 if graph is not None and not isinstance(graph, str):
                     st.plotly_chart(graph)
