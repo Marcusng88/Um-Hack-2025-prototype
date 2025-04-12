@@ -7,7 +7,6 @@ import json
 import asyncio
 
 
-from google import genai
 from llama_index.core.query_pipeline import (
     QueryPipeline as QP,
     Link,
@@ -26,6 +25,11 @@ try:
 except RuntimeError:
     asyncio.set_event_loop(asyncio.new_event_loop())
 
+try:
+    from config import GOOGLE_API_KEY
+except ImportError:
+    print('Please create a config.py file with your Google API key')
+    GOOGLE_API_KEY = ""
 path = 'api/Synthetic dataset for task 2.zip'
 
 with zipfile.ZipFile(path) as z:
@@ -41,7 +45,7 @@ with zipfile.ZipFile(path) as z:
         df_transaction_items = pd.read_csv(f)
 
 
-llm = GoogleGenAI(api_key='AIzaSyB65urG5OL56HIsf0_Rxqof-q5e6M9Pjrg', model_name="models/gemma-3-27b-it")
+llm = GoogleGenAI(api_key=GOOGLE_API_KEY, model_name="models/gemma-3-27b-it")
 
 def choose_dataset(input_question):
     input_question = input_question
@@ -147,7 +151,7 @@ def query_pipeline(df):
         y_label is the label for y-axis.
         data_x is the list of data for x-axis.
         data_y is the list of data for y-axis.
-        color is the color styling for the plotly graph. Please use interactive color\n
+        color is the color styling for the plotly graph. Please use color available for plotly\n
 
         """
         "Do not give other output other than the json\n"
