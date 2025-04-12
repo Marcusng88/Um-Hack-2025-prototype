@@ -49,3 +49,8 @@ pip install -r requirements.txt
 3. Create your own Google AI API Key and Tavily API Key.
 4. Paste your Google AI API Key into `GOOGLE_API_KEY`.
 5. Paste your Tavily API Key into `TAVILY_API_KEY`.
+
+#### 5. Run the code
+```bash
+streamlit run main.py
+```
