@@ -6,3 +6,6 @@ api/speech-to-text.py
 api/__init__.py
 api/__pycache__/
 config.py
+__pycache__/
+*/__pycache__/
+**/__pycache__/
