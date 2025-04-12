@@ -26,5 +26,5 @@ Grab MEX AI assistant is a new generation solution that leverages AI to empower 
 
 ## 🛠️ Installation
 #### 1. Clone the repository
-        ```bash
-        git clone https://github.com/Marcusng88/Um-Hack-2025-prototype.git
+```bash
+git clone https://github.com/Marcusng88/Um-Hack-2025-prototype.git
