@@ -124,6 +124,8 @@ def query_pipeline(df):
         "You should analyze the result and give business insight, the user will be merchant partner from food delivery company.\n"
         "Make it interactive and informative with minimum 125 words.\n"
         "If the user query is irrelevant to the dataset ,ANSWER THEIR QUESTION IN A BUSINESS PERSPECTIVE"
+        "Please structure the response markdown in a proper way.(eg. Title should have bold and bigger text size, break line after title)"
+        "You may add emoji in your response to make it more interactive.\n"
         "Query: {query_str}\n\n"
         "Pandas Instructions (optional):\n{pandas_instructions}\n\n"
         "Pandas Output: {pandas_output}\n\n"

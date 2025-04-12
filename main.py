@@ -53,11 +53,14 @@ if prompt := st.chat_input("What is up?"):
             if graph is not None and not isinstance(graph, str):
                 st.plotly_chart(graph)
             
-            for chunk in assistant_response.split():
-                full_response += chunk + " "
-                time.sleep(0.05)
-                # Add a blinking cursor to simulate typing
+            for line in assistant_response.split("\n"):
+                for chunk in line.split():
+                    full_response += chunk + " "
+                    time.sleep(0.05)
+                    message_placeholder.markdown(full_response + "▌")
+                full_response += "\n"
                 message_placeholder.markdown(full_response + "▌")
+
         message_placeholder.markdown(full_response)
     # Add assistant response to chat history
     st.session_state.messages.append({"role": "assistant", "content": full_response})
@@ -83,11 +86,12 @@ elif st.button("Start Transcription"):
                 if graph is not None and not isinstance(graph, str):
                     st.plotly_chart(graph)
 
-                for chunk in assistant_response.split():
+                for chunk in line.split():
                     full_response += chunk + " "
                     time.sleep(0.05)
-                    # Add a blinking cursor to simulate typing
                     message_placeholder.markdown(full_response + "▌")
+                full_response += "\n"
+                message_placeholder.markdown(full_response + "▌")
             
             message_placeholder.markdown(full_response)
         # Add assistant response to chat history
