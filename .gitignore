@@ -5,4 +5,4 @@ api/real_api.py
 api/speech-to-text.py
 api/__init__.py
 api/__pycache__/
-config.py/
+config.py
