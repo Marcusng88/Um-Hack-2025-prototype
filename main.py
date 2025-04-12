@@ -85,14 +85,14 @@ if deep_thinking and "last_user_prompt" in st.session_state:
         full_response = ""
 
         with st.spinner("Performing deep search..."):
-            print(0)
             deep_response = deep_search.deep_search(deep_prompt)
             
-            print(deep_response)  # Debugging
-
-            for chunk in deep_response.split():
-                full_response += chunk + " "
-                time.sleep(0.05)
+            for line in deep_response.split("\n"):
+                for chunk in line.split():
+                    full_response += chunk + " "
+                    time.sleep(0.05)
+                    message_placeholder.markdown(full_response + "▌")
+                full_response += "\n"
                 message_placeholder.markdown(full_response + "▌")
         message_placeholder.markdown(full_response) # Debugging
 
@@ -120,12 +120,13 @@ elif transcription:
                 if graph is not None and not isinstance(graph, str):
                     st.plotly_chart(graph)
 
-                for chunk in line.split():
-                    full_response += chunk + " "
-                    time.sleep(0.05)
+                for line in assistant_response.split("\n"):
+                    for chunk in line.split():
+                        full_response += chunk + " "
+                        time.sleep(0.05)
+                        message_placeholder.markdown(full_response + "▌")
+                    full_response += "\n"
                     message_placeholder.markdown(full_response + "▌")
-                full_response += "\n"
-                message_placeholder.markdown(full_response + "▌")
             
             message_placeholder.markdown(full_response)
         # Add assistant response to chat history
