@@ -4,7 +4,8 @@
 Grab MEX AI assistant is a new generation solution that leverages AI to empower Grab's merchant-partners with a smart, intuitive chat-based assistant that is capable of providing actionable insights and proactive guidance directly to merchants, enabling better business decisions and streamlined operations. In addition, our much capable assistant is also able to plot graphs and even perform deep search to provide high quality business insights for Grab's merchant partners. 
 
 ## 🎥 Demo
-### Youtube: https://youtu.be/L7SxcbMoi3M?si=btS-NbUMFD0vAdsS
+### Youtube: https://youtu.be/L7SxcbMoi3M?si=btS-NbUMFD0vAdsS  
+### Figma: https://www.figma.com/design/PDGCOUtaZpSNTEonQ17r5G/Grab-MEX-Mobile-User-Interface?node-id=0-1&t=GpcXP3mcMVYZsMnZ-1
 
 ## ✨ Features
 🤖 Query Engine based Chat Assistant  
