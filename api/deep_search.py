@@ -30,9 +30,7 @@ def deep_search(prompt: str) -> str:
         "Analyze the following search results and provide a concise summary:\n\n"
         f"{combined_results}"
     )
-    print(111111)
-    # Use LLM to analyze the search results
-    # response = llm.chat(messages=[{"role": "user", "content": analysis_prompt}])
+
     response = llm.complete(analysis_prompt)
     return (response.text)
 
