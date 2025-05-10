@@ -14,6 +14,40 @@ Grab MEX AI assistant is a new generation solution that leverages AI to empower 
 🌐 Deep Thinking  
 📊 Graph Generation  
 
+## 🏗️ Architecture
+Our system employs a multi-LLM architecture to process user queries and generate insightful responses. Here's how it works:
+
+![Architecture Diagram](docs/architecture.png)
+
+### System Flow
+1. **User Query Processing**
+   - System receives natural language queries from users
+   - Initial query analysis determines the context and intent
+
+2. **Dataset Selection (Gemma-3)**
+   - Gemma-3 LLM analyzes the query to select the most appropriate dataset
+   - Intelligent mapping between user intent and available data sources
+
+3. **Pandas Query Engine**
+   - Converts natural language queries into executable Pandas operations
+   - Performs efficient data filtering, aggregation, and transformation
+   - Ensures optimal data processing for complex analytical tasks
+
+4. **Data Processing**
+   - Executes the generated Pandas operations on selected datasets
+   - Handles data cleaning, formatting, and preliminary analysis
+   - Prepares data for visualization and response generation
+
+5. **Response Synthesis**
+   - Combines processed data with business insights
+   - Generates natural language explanations of findings
+   - Ensures responses are both informative and actionable
+
+6. **Graph Visualization**
+   - Creates dynamic visualizations of analyzed data
+   - Supports multiple chart types for optimal data representation
+   - Enhances understanding through visual data presentation
+
 ## 🧰 Tech Stack
 ### Frontend
 - Streamlit
