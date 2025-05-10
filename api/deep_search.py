@@ -27,7 +27,10 @@ def deep_search(prompt: str) -> str:
 
     # Define prompt
     analysis_prompt = (
-        "Analyze the following search results and provide a concise summary:\n\n"
+        "You are a business insight consultant. Analyze the following search results and provide a insightful summary:. \n\n"
+        "Please structure the response markdown in a proper way.(eg. Title should have bold and bigger text size, break line after title)\n"
+        "The main title text size should not too big \n"
+        "You may add emoji in your response to make it more interactive.\n"
         f"{combined_results}"
     )
 
